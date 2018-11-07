@@ -5,3 +5,6 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+
+Shop.create_with(display_name: 'コープデリ').find_or_create_by!(name: 'coop-deli')
+Shop.create_with(display_name: 'パルシステム').find_or_create_by!(name: 'pal-system')

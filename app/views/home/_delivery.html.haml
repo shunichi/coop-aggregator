@@ -1,0 +1,5 @@
+%li
+  #{delivery.delivery_date ? delivery.delivery_date.strftime('%Y年%m月%d日') : '？？？？年？月？日'} : #{delivery.shop.display_name} #{delivery.name}
+  %ul
+    - delivery.items.order(:id).each do |item|
+      %li #{item.name} (#{item.price}円 x #{item.quantity} = #{item.total}円)
