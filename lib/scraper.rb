@@ -36,8 +36,9 @@ class Scraper
 
     session = Capybara::Session.new(@driver)
     session.visit 'https://shop.pal-system.co.jp/ipsc/restTermEntry.htm'
-    id_field = session.find('input[type="text"][placeholder="半角英数記号を入力"]')
-    id_field.set(PAL_USER_ID)
+    # id_field = session.find('input[type="text"][placeholder="半角英数記号を入力"]')
+    # id_field.set(PAL_USER_ID)
+    session.fill_in 'S9_', with: PAL_USER_ID
     session.fill_in 'password', with: PAL_PASSWORD
     session.click_link 'ログイン'
 
