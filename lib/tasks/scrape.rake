@@ -4,8 +4,6 @@ require_relative '../scraper'
 
 namespace :coop do
   task scrape: :environment do
-    ActiveRecord::Base.logger = Logger.new(STDOUT)
-
     puts '******************************** COOP DELI'
     Scraper.new.coop_deli
     puts '******************************** PAL SYSTEM'

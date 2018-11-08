@@ -35,16 +35,16 @@ class Scraper
     shop = Shop.find_by!(name: 'pal-system')
 
     session = Capybara::Session.new(@driver)
-    session.visit 'https://shop.pal-system.co.jp/ipsc/restTermEntry.htm'
-    sleep 2
-    puts "*******************************************"
-    puts session.html
-    puts "*******************************************"
+    session.visit 'https://shop.pal-system.co.jp/iplg/login.htm?PROC_DIV=1'
     id_field = session.find(:xpath, '//div[@class="fieldset"][contains(., "ID")]//input')
     id_field.set(PAL_USER_ID)
-    # session.fill_in 'S9_', with: PAL_USER_ID
     session.fill_in 'password', with: PAL_PASSWORD
     session.click_link 'ログイン'
+    session.assert_text 'Myメニュー'
+
+    # このページを経由しないとエラーになる
+    session.visit 'https://shop.pal-system.co.jp/ipsc/restTermEntry.htm'
+    session.assert_text 'お休みを申し込む'
 
     # 配達回と配達日の対応を取得
     # お休みの申し込みなら配達日が表示される。でも未来しか見えない。
