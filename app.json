@@ -10,15 +10,19 @@
   "env": {
     "PAL_USER_ID": {
       "description": "PAL-SYSTEM user id",
+      "required": false
     },
     "PAL_PASSWORD": {
       "description": "PAL-SYSTEM password",
+      "required": false
     },
     "DELI_USER_ID": {
       "description": "COOP-DELI user id",
+      "required": false
     },
     "DELI_PASSWORD": {
       "description": "COOP-DELI password",
+      "required": false
     }
   },
   "formation": {
