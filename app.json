@@ -1,0 +1,44 @@
+{
+  "name": "Coop order aggregator",
+  "description": "Order aggregator for COOP-DELI and PAL-SYSTEM.",
+  "keywords": [
+  ],
+  "repository": "https://github.com/shunichi/coop-aggregator",
+  "scripts": {
+    "postdeploy": "bundle exec rake db:seed"
+  },
+  "env": {
+    "PAL_USER_ID": {
+      "description": "PAL-SYSTEM user id",
+    },
+    "PAL_PASSWORD": {
+      "description": "PAL-SYSTEM password",
+    },
+    "DELI_USER_ID": {
+      "description": "COOP-DELI user id",
+    },
+    "DELI_PASSWORD": {
+      "description": "COOP-DELI password",
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "image": "heroku/ruby",
+  "addons": [
+    {
+      "plan": "heroku-postgresql:hobby-dev",
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/heroku-buildpack-google-chrome"
+    },
+    {
+      "url": "heroku/heroku-buildpack-chromedriver"
+    }
+  ],
+}
