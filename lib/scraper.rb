@@ -18,6 +18,18 @@ def write_html(session, filename)
   IO.write(filename, session.html)
 end
 
+Capybara::Screenshot.autosave_on_failure = false
+Capybara::Screenshot.s3_configuration = {
+  s3_client_credentials: {
+    access_key_id: ENV.fetch('AWS_S3_ACCESS_KEY_ID'),
+    secret_access_key: ENV.fetch('AWS_S3_SECRET_KEY'),
+    region: ENV.fetch('AWS_S3_REGION'),
+  },
+  bucket_name: ENV.fetch('AWS_S3_BUCKET_NAME')
+}
+Capybara::Screenshot.s3_object_configuration = {
+  acl: 'public-read'
+}
 
 # # puts '************************************* COOP DELI'
 # coop_deli
@@ -29,13 +41,17 @@ class Scraper
 
   def initialize(driver = :selenium_chrome_headless)
     @driver = driver
+    Capybara.current_driver = driver
+    Capybara.save_path = 'tmp/capybara'
   end
 
   def pal_system
     shop = Shop.find_by!(name: 'pal-system')
 
-    session = Capybara::Session.new(@driver)
+    session = Capybara.current_session
     session.visit 'https://shop.pal-system.co.jp/iplg/login.htm?PROC_DIV=1'
+    result = Capybara::Screenshot.screenshot_and_save_page
+    p result
     id_field = session.find(:xpath, '//div[@class="fieldset"][contains(., "ID")]//input')
     id_field.set(PAL_USER_ID)
     session.fill_in 'password', with: PAL_PASSWORD
@@ -98,7 +114,7 @@ class Scraper
   def coop_deli
     shop = Shop.find_by!(name: 'coop-deli')
 
-    session = Capybara::Session.new(@driver)
+    session = Capybara.current_session
     session.visit 'https://weekly.coopdeli.jp/order/index.html'
 
     if /メンテナンスのお知らせ/.match(session.html)

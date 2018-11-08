@@ -4,9 +4,9 @@ require_relative '../scraper'
 
 namespace :coop do
   task scrape: :environment do
-    puts '******************************** COOP DELI'
-    Scraper.new.coop_deli
     puts '******************************** PAL SYSTEM'
     Scraper.new.pal_system
+    puts '******************************** COOP DELI'
+    Scraper.new.coop_deli
   end
 end
