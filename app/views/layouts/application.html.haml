@@ -3,6 +3,8 @@
   %head
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{name: "viewport", content: "width=device-width, initial-scale=1, shrink-to-fit=no"}/
+    %link{rel: "shortcut icon", href: "/favicon.ico", type: "image/x-icon"}/
+    %link{rel: "icon", href: "/favicon.ico", type: "image/x-icon"}/
     %title Coop-san
     = csrf_meta_tags
     = csp_meta_tag
@@ -11,3 +13,11 @@
   %body
     .container
       = yield
+    .footer
+      Icons made by
+      %a{ href: "https://www.flaticon.com/authors/smashicons", title:"Smashicons"} Smashicons
+      from
+      %a{ href: "https://www.flaticon.com/", title:"Flaticon"} www.flaticon.com
+      is licensed by
+      %a{ href: "http://creativecommons.org/licenses/by/3.0/", title: "Creative Commons BY 3.0", target: "_blank"}
+      CC 3.0 BY
