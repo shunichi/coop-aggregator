@@ -1,0 +1,8 @@
+{
+  "name": "coop-aggregator",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^6.1.0",
+    "puppeteer": "^1.10.0"
+  }
+}
