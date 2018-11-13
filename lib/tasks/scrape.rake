@@ -5,7 +5,9 @@ require_relative '../scraper'
 namespace :coop do
   task scrape: :environment do
     puts '******************************** PAL SYSTEM'
-    Scraper.new.pal_system
+    Retryable.retryable(tries: 3, on: Scraper::APIError, exception_cb: -> (ex) { puts ex.message }) do
+      Scraper.new.pal_system
+    end
     puts '******************************** COOP DELI'
     Scraper.new.coop_deli
   end

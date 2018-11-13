@@ -10,6 +10,7 @@ Dotenv.load
 
 PAL_USER_ID = ENV['PAL_USER_ID']
 PAL_PASSWORD = ENV['PAL_PASSWORD']
+PAL_API_URL = ENV['PAL_API_URL']
 DELI_USER_ID = ENV['DELI_USER_ID']
 DELI_PASSWORD = ENV['DELI_PASSWORD']
 
@@ -45,70 +46,50 @@ class Scraper
     Capybara.save_path = 'tmp/capybara'
   end
 
-  def pal_system
-    shop = Shop.find_by!(name: 'pal-system')
+  class APIError < StandardError
+  end
 
-    session = Capybara.current_session
-    session.visit 'https://shop.pal-system.co.jp/iplg/login.htm?PROC_DIV=1'
-    result = Capybara::Screenshot.screenshot_and_save_page
-    p result
-    id_field = session.find(:xpath, '//div[@class="fieldset"][contains(., "ID")]//input')
-    id_field.set(PAL_USER_ID)
-    session.fill_in 'password', with: PAL_PASSWORD
-    session.click_link 'ログイン'
-    session.assert_text 'Myメニュー'
+  class Client
+    def self.post
+      self.new(PAL_API_URL).post
+    end
 
-    # このページを経由しないとエラーになる
-    session.visit 'https://shop.pal-system.co.jp/ipsc/restTermEntry.htm'
-    session.assert_text 'お休みを申し込む'
+    def initialize(endpoint)
+      @uri = URI.parse(endpoint)
+    end
 
-    # 配達回と配達日の対応を取得
-    # お休みの申し込みなら配達日が表示される。でも未来しか見えない。
-    session.visit 'https://shop.pal-system.co.jp/ipsc/restTermInput.htm'
-    session.assert_text 'ご注文のお休みを開始する企画回'
-
-    today = Date.today
-    delivery_days = session.all('.list-input.orderRest .col.title').map do |node|
-      # 1月4回　2月2日(金)お届け商品分
-      if m = /\A((\d+)月.+?)　(\d+)月(\d+)日/.match(node.text)
-        name_month = m[2].to_i
-        name_year = today.month <= name_month ? today.year : today.year + 1
-        month = m[3].to_i
-        day = m[4].to_i
-        date = Date.new(today.month <= month ? today.year : today.year + 1, month, day)
-        { year: name_year, name: m[1], delivery_date: date }
+    def post
+      http = Net::HTTP.new(@uri.host, @uri.port).tap { |h| h.use_ssl = @uri.scheme == 'https' }
+      request = Net::HTTP::Post.new(@uri.request_uri, headers)
+      request.body = { id: PAL_USER_ID, password: PAL_PASSWORD }.to_json
+      response = http.request(request)
+      if response.code == '200'
+        JSON.parse(response.body).deep_symbolize_keys
       else
-        raise %("#{node.text}" does not match!)
+        raise APIError, response.body
       end
     end
-    puts delivery_days
-    delivery_days.each do |day|
-      shop.deliveries.create_with(name: day[:name]).find_or_create_by!(delivery_date: day[:delivery_date])
+
+    private
+
+    def headers
+      { 'Content-Type' => 'application/json' }
     end
+  end
 
-    # 注文
-    session.visit 'https://shop.pal-system.co.jp/pal/OrderReferenceDirect.do'
-    session.assert_text '注文履歴'
-
-    write_html(session, 'tmp/pal.html')
-
-    doc = Nokogiri::HTML.parse(session.html)
-    title = doc.xpath("//div[@class='section record']/h2").text.gsub(/\s+/, ' ').strip
-    delivery_name = title.gsub(/(\d+月\d回).*/, '\1')
-    puts title
-    puts delivery_name
-    scraped_items = doc.xpath("//table[contains(@class,'order-table1')]/tbody/tr[td[contains(@class,'item')]]").map do |node|
-      {
-        name: node.xpath("td[contains(@class,'item')]").text.gsub(/\s+/, ' ').strip,
-        quantity: node.xpath("td[@class='quantity']").text.gsub(/(\s+|,)/, '').to_i,
-        price: node.xpath("td[@class='price']").text.gsub(/(\s+|,)/, '').to_i,
-        total: node.xpath("td[@class='total']").text.gsub(/(\s+|,)/, '').to_i,
-      }
+  def pal_system
+    json = Client.post
+    shop = Shop.find_by!(name: 'pal-system')
+    json[:deliveryDates].each do |data|
+      shop.deliveries.create_with(name: data[:name]).find_or_create_by!(delivery_date: data[:deliveryDate])
+      puts data
     end
-    puts scraped_items
+    delivery_name = json[:order][:name]
     delivery = shop.deliveries.where(name: delivery_name).where('delivery_date IS NULL OR delivery_date >= ?', Date.current).order(:id).last
     delivery ||= shop.deliveries.create!(name: delivery_name)
-    update_items!(delivery, scraped_items)
+    puts "***** #{delivery_name}"
+    puts json[:order][:items]
+    update_items!(delivery, json[:order][:items])
   end
 
   def coop_deli

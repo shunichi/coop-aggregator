@@ -1,11 +1,8 @@
-const puppeteer = require('puppeteer');
 const path = require('path');
 const dotenv_path = path.resolve(process.cwd(), '../.env');
 require('dotenv').config({ path: dotenv_path });
 
-const PAL_ID = process.env.PAL_USER_ID;
-const PAL_PASSWORD = process.env.PAL_PASSWORD;
-const BUTTON_XPATH = "//a[contains(.,'ログイン')]";
+const puppeteer = require('puppeteer');
 
 async function waitUntilLoad(page, asyncFunc) {
   let loadPromise = page.waitForNavigation({waitUntil: "domcontentloaded"});
@@ -14,7 +11,7 @@ async function waitUntilLoad(page, asyncFunc) {
 }
 
 async function goto(page, url) {
-  await waitUntilLoad(page, async (page) => page.goto(url));
+  await page.goto(url, {waitUntil: 'domcontentloaded'});
 }
 
 async function fillIn(page, selector, value) {
@@ -22,10 +19,12 @@ async function fillIn(page, selector, value) {
   await page.type(selector, value);
 }
 
-async function login(page) {
+async function login(page, {id, password}) {
+  const BUTTON_XPATH = "//a[contains(.,'ログイン')]";
   await goto(page, 'https://shop.pal-system.co.jp/iplg/login.htm');
-  await fillIn(page, "input[name=S9_]", PAL_ID);
-  await fillIn(page, "input[id=password]", PAL_PASSWORD);
+  await page.waitForSelector("input[name=S9_]");
+  await fillIn(page, "input[name=S9_]", id);
+  await fillIn(page, "input[id=password]", password);
   await waitUntilLoad(page, async () => (await page.$x(BUTTON_XPATH))[0].click());
 }
 
@@ -79,8 +78,8 @@ async function scrapeLatestOrder(page) {
   return { name, items };
 }
 
-async function scrapeAll(page) {
-  await login(page);
+async function scrapeAll(page, credential) {
+  await login(page, credential);
   const deliveryDates = await scrapeDeliveryDates(page);
   const order = await scrapeLatestOrder(page);
   return { deliveryDates, order };
@@ -90,7 +89,7 @@ async function scrapeAll(page) {
   // const browser = await puppeteer.launch();
   const browser = await puppeteer.launch({headless: false})
   const page = await browser.newPage();
-  const result = await scrapeAll(page);
+  const result = await scrapeAll(page, {id: process.env.PAL_USER_ID, password: process.env.PAL_PASSWORD});
   console.log(JSON.stringify(result));
   await browser.close();
 })();
