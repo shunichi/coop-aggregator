@@ -18,7 +18,7 @@ async function fillIn(page, selector, value) {
 async function login(page, {id, password}) {
   const BUTTON_XPATH = "//a[contains(.,'ログイン')]";
   await goto(page, 'https://shop.pal-system.co.jp/iplg/login.htm');
-  await page.waitForSelector("input[name=S9_]");
+  await page.waitForSelector("input[name=S9_]", {timeout: 5000});
   await fillIn(page, "input[name=S9_]", id);
   await fillIn(page, "input[id=password]", password);
   await waitUntilLoad(page, async () => (await page.$x(BUTTON_XPATH))[0].click());

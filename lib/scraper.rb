@@ -60,6 +60,7 @@ class Scraper
 
     def post
       http = Net::HTTP.new(@uri.host, @uri.port).tap { |h| h.use_ssl = @uri.scheme == 'https' }
+      http.read_timeout = 150
       request = Net::HTTP::Post.new(@uri.request_uri, headers)
       request.body = { id: PAL_USER_ID, password: PAL_PASSWORD }.to_json
       response = http.request(request)
