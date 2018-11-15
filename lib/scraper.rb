@@ -84,12 +84,14 @@ class Scraper
       shop.deliveries.create_with(name: data[:name]).find_or_create_by!(delivery_date: data[:deliveryDate])
       puts data
     end
-    delivery_name = json[:order][:name]
-    delivery = shop.deliveries.where(name: delivery_name).where('delivery_date IS NULL OR delivery_date >= ?', Date.current).order(:id).last
-    delivery ||= shop.deliveries.create!(name: delivery_name)
-    puts "***** #{delivery_name}"
-    puts json[:order][:items]
-    update_items!(delivery, json[:order][:items])
+    json[:orders].each do |order|
+      delivery_name = order[:name]
+      delivery = shop.deliveries.where(name: delivery_name).where('delivery_date IS NULL OR delivery_date >= ?', Date.current).order(:id).last
+      delivery ||= shop.deliveries.create!(name: delivery_name)
+      puts "***** #{delivery_name}"
+      puts order[:items]
+      update_items!(delivery, order[:items])
+    end
   end
 
   def coop_deli

@@ -1,7 +1,3 @@
-const path = require('path');
-const dotenv_path = path.resolve(process.cwd(), '../.env');
-require('dotenv').config({ path: dotenv_path });
-
 const puppeteer = require('puppeteer');
 
 async function waitUntilLoad(page, asyncFunc) {
@@ -57,6 +53,23 @@ function parseIntWithComma(str) {
   return parseInt(str.replace(/,/g, ''))
 }
 
+async function scrapeNextOrder(page) {
+  await goto(page, 'https://shop.pal-system.co.jp/pal/OrderConfirm.do');
+  const month = await page.$eval('.shop-info .month .num', node => node.textContent);
+  const times = await page.$eval('.shop-info .times .num', node => node.textContent);
+  const name = `${month}月${times}回`;
+  await page.waitForSelector('.order-table1 tr.detail');
+  const rows = await page.$$('.order-table1 tr.detail');
+  const items = await Promise.all(rows.map(async(row) => {
+    const name = squeeze(await row.$eval('.name', node => node.textContent)).replace(/【毎週】\s*/, '【毎週】');
+    const quantity = parseInt(await row.$eval('.quantity input', node => node.value));
+    const price = parseInt((await row.$eval('.price-small', node => node.textContent)).replace(/[^\d]/g, ''));
+    const total = parseInt((await row.$eval('.total', node => node.textContent)).replace(/[^\d]/g, ''));
+    return { name, price, quantity, total };
+  }));
+  return { name, items };
+}
+
 async function scrapeLatestOrder(page) {
   await goto(page, 'https://shop.pal-system.co.jp/pal/OrderReferenceDirect.do');
   const title = await page.$eval('.section.record > h2', (node) => node.textContent );
@@ -65,10 +78,10 @@ async function scrapeLatestOrder(page) {
   const rows = await page.$x("//table[contains(@class,'order-table1')]/tbody/tr[td[contains(@class,'item')]]");
   const items = await Promise.all(rows.map(async (row) => {
     const name = squeeze(
-      await row.$eval(
+      (await row.$eval(
         'td.item',
         item => [].reduce.call(item.childNodes, (a, b) => (a + (b.nodeType === 3 ? b.textContent : '')), '')
-      )
+      )).replace('【定期お届け】', '')
     );
     const quantity = parseIntWithComma(await row.$eval('.quantity', item => item.textContent));
     const price = parseIntWithComma(await row.$eval('.price', item => item.textContent));
@@ -81,9 +94,15 @@ async function scrapeLatestOrder(page) {
 async function scrapeAll(page, credential) {
   await login(page, credential);
   const deliveryDates = await scrapeDeliveryDates(page);
+  const nextOrder = await scrapeNextOrder(page);
   const order = await scrapeLatestOrder(page);
-  return { deliveryDates, order };
+  const orders = [order, nextOrder];
+  return { deliveryDates, orders };
 }
+
+const path = require('path');
+const dotenv_path = path.resolve(process.cwd(), '../.env');
+require('dotenv').config({ path: dotenv_path });
 
 (async () => {
   // const browser = await puppeteer.launch();
