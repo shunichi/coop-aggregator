@@ -1,4 +1,11 @@
 %ul.list-unstyled.delivery-list
+  - if @old_deliveries.present?
+    = render partial: 'home/delivery', collection: @old_deliveries
+    %li.delivery-list__separator
+      .delivery-list__separator-line
+      .delivery-list__separator-date
+        今日（#{Date.current.strftime('%Y年%m月%d日')}）
+      .delivery-list__separator-line
   = render partial: 'home/delivery', collection: @deliveries_without_delivery_date
   = render partial: 'home/delivery', collection: @deliveries
 
