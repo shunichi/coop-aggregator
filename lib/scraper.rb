@@ -87,8 +87,8 @@ class Scraper
     end
     json[:orders].each do |order|
       delivery_name = order[:name]
-      delivery = shop.deliveries.where(name: delivery_name).where('delivery_date IS NULL OR delivery_date >= ?', Date.current).order(:id).last
-      delivery ||= shop.deliveries.create!(name: delivery_name)
+      # TODO パルシステムでも 2018年11月2回 というような名前になるようにする
+      delivery = shop.deliveries.find_or_create_by!(name: delivery_name)
       puts "***** #{delivery_name}"
       puts order[:items]
       update_items!(delivery, order[:items])
