@@ -28,7 +28,10 @@ async function scrapeDeliveryDates(page) {
   await goto(page, 'https://shop.pal-system.co.jp/ipsc/restTermEntry.htm');
   await goto(page, 'https://shop.pal-system.co.jp/ipsc/restTermInput.htm');
   const result = await page.evaluate(scanDeliveries);
-  return result;
+  return result.map((data) => {
+    data['name'] = addYearToName(data['name']);
+    return data;
+  });
 }
 
 function scanDeliveries() {
@@ -45,6 +48,20 @@ function scanDeliveries() {
   });
 }
 
+function addYearToName(name) {
+  const m = /^(\d+)月/.exec(name);
+  if (m) {
+    const month = parseInt(m[1]);
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+    const year = (month < currentMonth) ? currentYear + 1 : currentYear;
+    return `${year}年${name}`;
+  } else {
+    return name;
+  }
+}
+
 function squeeze(str) {
   return str.replace(/[\n\s]+/g, ' ').trim();
 }
@@ -57,7 +74,7 @@ async function scrapeNextOrder(page) {
   await goto(page, 'https://shop.pal-system.co.jp/pal/OrderConfirm.do');
   const month = await page.$eval('.shop-info .month .num', node => node.textContent);
   const times = await page.$eval('.shop-info .times .num', node => node.textContent);
-  const name = `${month}月${times}回`;
+  const name = addYearToName(`${month.trim()}月${times.trim()}回`);
   await page.waitForSelector('.order-table1 tr.detail');
   const rows = await page.$$('.order-table1 tr.detail');
   const items = await Promise.all(rows.map(async(row) => {
@@ -74,7 +91,7 @@ async function scrapeLatestOrder(page) {
   await goto(page, 'https://shop.pal-system.co.jp/pal/OrderReferenceDirect.do');
   const title = await page.$eval('.section.record > h2', (node) => node.textContent );
   const m = /(\d+月\d回)/.exec(title);
-  const name = m[1];
+  const name = addYearToName(m[1]);
   const rows = await page.$x("//table[contains(@class,'order-table1')]/tbody/tr[td[contains(@class,'item')]]");
   const items = await Promise.all(rows.map(async (row) => {
     const name = squeeze(
