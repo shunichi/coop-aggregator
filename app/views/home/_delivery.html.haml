@@ -2,10 +2,4 @@
   .delivery-header__content
     #{delivery.delivery_date ? delivery.delivery_date.strftime('%Y年%m月%d日') : '????年??月??日'} : #{delivery.shop.display_name} #{delivery.name}
   %ul.list-unstyled
-    - delivery.items.order(:id).each do |item|
-      %li.delivery-item
-        .delivery-item__mark{class: delivery.shop.name}
-        .delivery-item__name
-          = item.name
-        .delivery-item__quantity
-          = item.quantity
+    = render partial: 'home/item', collection: delivery.root_items, locals: { shop: delivery.shop }

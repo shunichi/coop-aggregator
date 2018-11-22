@@ -1,0 +1,10 @@
+%li.delivery-item{class: ('is-child' if item.parent_id)}
+  .delivery-item__mark{class: shop.name}
+  - if item.image_url.present?
+    .delivery-item__image
+      = image_tag item.image_url
+  .delivery-item__name
+    = item.name
+  .delivery-item__quantity
+    = item.quantity
+= render partial: 'home/item', collection: item.child_items.order(:id), locals: { shop: shop }

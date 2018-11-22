@@ -49,7 +49,7 @@ class Scraper
   class APIError < StandardError
   end
 
-  class Client
+  class PalSystemClient
     def self.post
       self.new(PAL_API_URL).post
     end
@@ -79,7 +79,8 @@ class Scraper
   end
 
   def pal_system
-    json = Client.post
+    json = PalSystemClient.post
+    pp json
     shop = Shop.find_by!(name: 'pal-system')
     json[:deliveryDates].each do |data|
       shop.deliveries.create_with(name: data[:name]).find_or_create_by!(delivery_date: data[:deliveryDate])
@@ -164,18 +165,34 @@ class Scraper
     end
   end
 
+  def update_item!(delivery, parent_item, attributes)
+    item = delivery.items
+      .find_or_create_by!(name: attributes[:name])
+    item.update!(
+      parent_id: parent_item&.id,
+      quantity: attributes[:quantity].to_i,
+      price: attributes[:price].to_i,
+      total: attributes[:total].to_i,
+      image_url: attributes[:imageUrl]
+      )
+    if attributes[:children]
+      attributes[:children].each do |child_attributes|
+        update_item!(delivery, item, child_attributes)
+      end
+    end
+    item
+  end
+
   def update_items!(delivery, scraped_items)
-    scraped_names = scraped_items.map { |i| i[:name] }.to_set
+    scraped_names = scraped_items.map { |attributes| attributes[:name] }.to_set
     Item.transaction do
       delivery.items.each do |item|
         unless scraped_names.member?(item.name)
           item.destroy!
         end
       end
-      scraped_items.each do |i|
-        item = delivery.items
-          .find_or_create_by!(name: i[:name])
-        item.update!(quantity: i[:quantity].to_i, price: i[:price].to_i, total: i[:total].to_i)
+      scraped_items.each do |attributes|
+        update_item!(delivery, nil, attributes)
       end
     end
   end

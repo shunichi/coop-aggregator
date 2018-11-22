@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_11_07_152831) do
+ActiveRecord::Schema.define(version: 2018_11_22_021602) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -32,7 +32,10 @@ ActiveRecord::Schema.define(version: 2018_11_07_152831) do
     t.integer "total", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "parent_id"
+    t.string "image_url"
     t.index ["delivery_id"], name: "index_items_on_delivery_id"
+    t.index ["parent_id"], name: "index_items_on_parent_id"
   end
 
   create_table "shops", force: :cascade do |t|
@@ -44,4 +47,5 @@ ActiveRecord::Schema.define(version: 2018_11_07_152831) do
 
   add_foreign_key "deliveries", "shops"
   add_foreign_key "items", "deliveries"
+  add_foreign_key "items", "items", column: "parent_id"
 end

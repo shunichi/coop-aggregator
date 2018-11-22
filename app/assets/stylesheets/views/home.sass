@@ -35,6 +35,8 @@
   justify-content: space-between
   font-weight: normal
   border-bottom: 1px solid #ddd
+  &.is-child
+    padding-left: 1rem
 
 .delivery-item__mark
   flex: none
@@ -45,8 +47,18 @@
   &.pal-system
     background-color: #23b900
 
+.delivery-item__image
+  flex: none
+  margin-right: 0.5rem
+  align-self: center
+  img
+    width: 2rem
+    height: 2rem
+    object-fit: contain
+
 .delivery-item__name
   flex: auto
+  align-self: center
 
 .delivery-item__quantity
   flex: 0 0 1.1rem

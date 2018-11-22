@@ -70,6 +70,23 @@ function parseIntWithComma(str) {
   return parseInt(str.replace(/,/g, ''))
 }
 
+function makeChildren(items) {
+  const result = [];
+  let lastTopLevelItem = null;
+  items.forEach((item) => {
+    if (item.isChild) {
+      lastTopLevelItem['children'] = lastTopLevelItem['children'] || [];
+      delete item.isChild;
+      lastTopLevelItem.children.push(item)
+    } else {
+      lastTopLevelItem = item;
+      delete item.isChild;
+      result.push(item);
+    }
+  });
+  return result;
+}
+
 async function scrapeNextOrder(page) {
   await goto(page, 'https://shop.pal-system.co.jp/pal/OrderConfirm.do');
   const month = await page.$eval('.shop-info .month .num', node => node.textContent);
@@ -77,13 +94,16 @@ async function scrapeNextOrder(page) {
   const name = addYearToName(`${month.trim()}月${times.trim()}回`);
   await page.waitForSelector('.order-table1 tr.detail');
   const rows = await page.$$('.order-table1 tr.detail');
-  const items = await Promise.all(rows.map(async(row) => {
+  const flatItems = await Promise.all(rows.map(async(row) => {
+    const isChild = await page.evaluate((node) => node.classList.contains('set-child'), row);
     const name = squeeze(await row.$eval('.name', node => node.textContent)).replace(/【毎週】\s*/, '【毎週】');
-    const quantity = parseInt(await row.$eval('.quantity input', node => node.value));
+    const quantity = parseInt(await row.$eval('.quantity input.orderQty', node => node.value));
     const price = parseInt((await row.$eval('.price-small', node => node.textContent)).replace(/[^\d]/g, ''));
     const total = parseInt((await row.$eval('.total', node => node.textContent)).replace(/[^\d]/g, ''));
-    return { name, price, quantity, total };
+    const imageUrl = await row.$eval('.photo img', node => node.src);
+    return { isChild, name, price, quantity, total, imageUrl };
   }));
+  const items = makeChildren(flatItems);
   return { name, items };
 }
 

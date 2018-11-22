@@ -1,6 +1,7 @@
 class Delivery < ApplicationRecord
   belongs_to :shop
   has_many :items, dependent: :destroy
+  has_many :root_items, -> { where(parent_id: nil) }, class_name: 'Item'
   validates :name, presence: true
 
   scope :without_delivery_date, -> { where(delivery_date: nil) }
