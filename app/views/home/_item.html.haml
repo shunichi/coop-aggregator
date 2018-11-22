@@ -1,4 +1,7 @@
-%li.delivery-item{class: ('is-child' if item.parent_id)}
+- classes = []
+- classes << 'is-zero' if item.quantity == 0
+- classes << 'is-child' if item.parent_id
+%li.delivery-item{class: classes}
   .delivery-item__mark{class: shop.name}
   - if item.image_url.present?
     .delivery-item__image
