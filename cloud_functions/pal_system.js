@@ -113,7 +113,8 @@ async function scrapeLatestOrder(page) {
   const m = /(\d+月\d回)/.exec(title);
   const name = addYearToName(m[1]);
   const rows = await page.$x("//table[contains(@class,'order-table1')]/tbody/tr[td[contains(@class,'item')]]");
-  const items = await Promise.all(rows.map(async (row) => {
+  const flatItems = await Promise.all(rows.map(async (row) => {
+    const isChild = await page.evaluate((node) => node.classList.contains('set-child'), row);
     const name = squeeze(
       (await row.$eval(
         'td.item',
@@ -123,8 +124,9 @@ async function scrapeLatestOrder(page) {
     const quantity = parseIntWithComma(await row.$eval('.quantity', item => item.textContent));
     const price = parseIntWithComma(await row.$eval('.price', item => item.textContent));
     const total = parseIntWithComma(await row.$eval('.total', item => item.textContent));
-    return { name, price, quantity, total };
+    return { isChild, name, price, quantity, total };
   }));
+  const items = makeChildren(flatItems);
   return { name, items };
 }
 
