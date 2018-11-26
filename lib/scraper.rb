@@ -184,10 +184,13 @@ class Scraper
   end
 
   def update_items!(delivery, scraped_items)
-    scraped_names = scraped_items.map { |attributes| attributes[:name] }.to_set
+    scraped_names = scraped_items.flat_map do |attributes|
+      [attributes[:name]] + Array(attributes[:children]).map { |child| child[:name] }
+    end.to_set
     Item.transaction do
       delivery.items.each do |item|
         unless scraped_names.member?(item.name)
+          puts "destroy '#{item.name}'"
           item.destroy!
         end
       end
