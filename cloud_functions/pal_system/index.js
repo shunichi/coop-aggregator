@@ -139,15 +139,20 @@ async function scrapeAll(page, credential) {
   return { deliveryDates, orders };
 }
 
-const path = require('path');
-const dotenv_path = path.resolve(process.cwd(), '../.env');
-require('dotenv').config({ path: dotenv_path });
+async function getBrowserPage(local) {
+  // Launch headless Chrome. Turn off sandbox so Chrome can run under root.
+  const options = local ? { headless: false } : { args: ['--no-sandbox'] };
+  const browser = await puppeteer.launch(options);
+  return { browser: browser, page: await browser.newPage() };
+}
 
-(async () => {
-  // const browser = await puppeteer.launch();
-  const browser = await puppeteer.launch({headless: false})
-  const page = await browser.newPage();
-  const result = await scrapeAll(page, {id: process.env.PAL_USER_ID, password: process.env.PAL_PASSWORD});
-  console.log(JSON.stringify(result));
-  await browser.close();
-})();
+exports.palSystem = async (req, res) => {
+  const { browser, page } = await getBrowserPage(req.body.local);
+  const result = await scrapeAll(page, { id: req.body.id, password: req.body.password });
+
+  res.set('Content-Type', 'application/json');
+  res.send(result);
+  if (req.body.local) {
+    await browser.close();
+  }
+};

@@ -1,5 +1,5 @@
 {
-  "name": "coop-aggregator",
+  "name": "pal-system-scraper",
   "private": true,
   "dependencies": {
     "dotenv": "^6.1.0",
