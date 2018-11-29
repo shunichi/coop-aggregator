@@ -55,10 +55,16 @@ async function intValue(page, baseElemHandle, xpath) {
   const text = await textValue(page, baseElemHandle, xpath);
   return parseIntWithComma(text);
 }
+
 async function inputIntValue(page, baseElemHandle, xpath) {
   const elemHandle = (await baseElemHandle.$x(xpath))[0];
   const text = await page.evaluate(node => node.value, elemHandle);
   return parseInt(text);
+}
+
+async function exists(page, baseElemHandle, xpath) {
+  const elems = await baseElemHandle.$x(xpath);
+  return elems.length > 0;
 }
 
 async function scrapeAll(page, credential) {
@@ -82,14 +88,15 @@ async function scrapeAll(page, credential) {
           const rows = await page.$x("//tr[not(@class) and td[@class='cartItemDetail']]");
           const items = await Promise.all(rows.map(async (row) => {
             const name = squeeze(await textValue(page, row, "td[@class='cartItemDetail']/p"));
-
+            const cold = await exists(page, row, "td[@class='cartItemDetail']//img[@alt='冷蔵でお届けの商品']");
+            const frozen = await exists(page, row, "td[@class='cartItemDetail']//img[@alt='冷凍でお届けの商品']");
             let quantity = await intValue(page, row, "td[@class='cartItemQty']");
             if (isNaN(quantity)) {
               quantity = await inputIntValue(page, row, "td[@class='cartItemQty']/input");
             }
             const price = await intValue(page, row, "td[@class='cartItemLot']");
             const total = await intValue(page, row, "td[@class='cartItemPrice']");
-            return { name, quantity, price, total };
+            return { name, quantity, price, total, cold, frozen };
           }));
           orders.push({ deliveryName, deliveryDate, items });
         }
