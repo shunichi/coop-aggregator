@@ -15,6 +15,11 @@ async function fillIn(page, selector, value) {
   await page.type(selector, value);
 }
 
+async function exists(page, baseElemHandle, xpath) {
+  const elems = await baseElemHandle.$x(xpath);
+  return elems.length > 0;
+}
+
 async function login(page, {id, password}) {
   const BUTTON_XPATH = "//a[contains(.,'ログイン')]";
   await goto(page, 'https://shop.pal-system.co.jp/iplg/login.htm');
@@ -104,11 +109,13 @@ async function scrapeNextOrder(page) {
     } catch (e) {
       return null;
     }
+    const cold = await exists(page, row, ".//img[@alt='お届け状態 冷蔵']");
+    const frozen = await exists(page, row, ".//img[@alt='お届け状態 冷凍']");
     const quantity = parseInt(await row.$eval('.quantity input.orderQty', node => node.value));
     const price = parseInt((await row.$eval('.price-small', node => node.textContent)).replace(/[^\d]/g, ''));
     const total = parseInt((await row.$eval('.total', node => node.textContent)).replace(/[^\d]/g, ''));
     const imageUrl = await row.$eval('.photo img', node => node.src);
-    return { isChild, name, price, quantity, total, imageUrl };
+    return { isChild, name, price, quantity, total, imageUrl, cold, frozen };
   }));
   const items = makeChildren(flatItems);
   return { name, items };

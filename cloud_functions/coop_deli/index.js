@@ -98,7 +98,7 @@ async function scrapeAll(page, credential) {
             const total = await intValue(page, row, "td[@class='cartItemPrice']");
             return { name, quantity, price, total, cold, frozen };
           }));
-          orders.push({ deliveryName, deliveryDate, items });
+          orders.push({ name: deliveryName, deliveryDate, items });
         }
       }
     }
