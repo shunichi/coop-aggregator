@@ -74,6 +74,7 @@ function makeChildren(items) {
   const result = [];
   let lastTopLevelItem = null;
   items.forEach((item) => {
+    if (item == null) return;
     if (item.isChild) {
       lastTopLevelItem['children'] = lastTopLevelItem['children'] || [];
       delete item.isChild;
@@ -96,7 +97,13 @@ async function scrapeNextOrder(page) {
   const rows = await page.$$('.order-table1 tr.detail');
   const flatItems = await Promise.all(rows.map(async(row) => {
     const isChild = await page.evaluate((node) => node.classList.contains('set-child'), row);
-    const name = squeeze(await row.$eval('.name', node => node.textContent)).replace(/【毎週】\s*/, '【毎週】');
+    let name = null;
+    // 値引きの行だと .name がないので無視する
+    try {
+      name = squeeze(await row.$eval('.name', node => node.textContent)).replace(/【毎週】\s*/, '【毎週】');
+    } catch (e) {
+      return null;
+    }
     const quantity = parseInt(await row.$eval('.quantity input.orderQty', node => node.value));
     const price = parseInt((await row.$eval('.price-small', node => node.textContent)).replace(/[^\d]/g, ''));
     const total = parseInt((await row.$eval('.total', node => node.textContent)).replace(/[^\d]/g, ''));
