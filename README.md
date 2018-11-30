@@ -1,3 +1,6 @@
-# README
+# 生協注文まとめて閲覧サービス
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+対応サービス
+
+- コープデリ
+- パルシステム
