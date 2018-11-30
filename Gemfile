@@ -38,6 +38,8 @@ gem 'hamlit-rails'
 gem 'bootstrap'
 gem 'font-awesome-sass'
 
+gem 'enumerize'
+
 gem 'dotenv-rails'
 gem 'capybara'
 gem 'selenium-webdriver'

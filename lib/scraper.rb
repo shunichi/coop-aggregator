@@ -113,12 +113,19 @@ class Scraper
   def update_item!(delivery, parent_item, attributes)
     item = delivery.items
       .find_or_create_by!(name: attributes[:name])
+    category =
+      if attributes[:cold]
+        'cold'
+      elsif attributes[:frozen]
+        'frozen'
+      end
     item_attributes = {
       parent_id: parent_item&.id,
       quantity: attributes[:quantity].to_i,
       price: attributes[:price].to_i,
       total: attributes[:total].to_i,
-      image_url: attributes[:imageUrl]
+      image_url: attributes[:imageUrl],
+      category: category,
     }.compact
     item.update!(item_attributes)
     if attributes[:children]

@@ -7,6 +7,7 @@
     .delivery-item__image
       = image_tag item.image_url
   .delivery-item__name
+    = item_category(item)
     = item.name
   .delivery-item__quantity
     = item.quantity

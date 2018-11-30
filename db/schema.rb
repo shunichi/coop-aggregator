@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_11_22_021602) do
+ActiveRecord::Schema.define(version: 2018_11_30_021839) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -34,6 +34,7 @@ ActiveRecord::Schema.define(version: 2018_11_22_021602) do
     t.datetime "updated_at", null: false
     t.bigint "parent_id"
     t.string "image_url"
+    t.string "category", default: "none", null: false
     t.index ["delivery_id"], name: "index_items_on_delivery_id"
     t.index ["parent_id"], name: "index_items_on_parent_id"
   end
