@@ -47,21 +47,6 @@ GEM
     arel (9.0.0)
     autoprefixer-rails (9.3.1)
       execjs
-    aws-eventstream (1.0.1)
-    aws-partitions (1.112.0)
-    aws-sdk-core (3.38.0)
-      aws-eventstream (~> 1.0)
-      aws-partitions (~> 1.0)
-      aws-sigv4 (~> 1.0)
-      jmespath (~> 1.0)
-    aws-sdk-kms (1.11.0)
-      aws-sdk-core (~> 3, >= 3.26.0)
-      aws-sigv4 (~> 1.0)
-    aws-sdk-s3 (1.23.1)
-      aws-sdk-core (~> 3, >= 3.26.0)
-      aws-sdk-kms (~> 1)
-      aws-sigv4 (~> 1.0)
-    aws-sigv4 (1.0.3)
     bindex (0.5.0)
     bootsnap (1.3.2)
       msgpack (~> 1.0)
@@ -73,19 +58,6 @@ GEM
       concurrent-ruby (~> 1.0)
     builder (3.2.3)
     byebug (10.0.2)
-    capybara (3.10.1)
-      addressable
-      mini_mime (>= 0.1.3)
-      nokogiri (~> 1.8)
-      rack (>= 1.6.0)
-      rack-test (>= 0.6.3)
-      regexp_parser (~> 1.2)
-      xpath (~> 3.2)
-    capybara-screenshot (1.0.22)
-      capybara (>= 1.0, < 4)
-      launchy
-    childprocess (0.9.0)
-      ffi (~> 1.0, >= 1.0.11)
     coffee-rails (4.2.2)
       coffee-script (>= 2.2.0)
       railties (>= 4.0.0)
@@ -122,7 +94,6 @@ GEM
     jbuilder (2.8.0)
       activesupport (>= 4.2.0)
       multi_json (>= 1.2)
-    jmespath (1.4.0)
     launchy (2.4.3)
       addressable (~> 2.3)
     listen (3.1.5)
@@ -181,10 +152,8 @@ GEM
     rb-fsevent (0.10.3)
     rb-inotify (0.9.10)
       ffi (>= 0.5.0, < 2)
-    regexp_parser (1.2.0)
     retryable (3.0.3)
     ruby_dep (1.5.0)
-    rubyzip (1.2.2)
     sass (3.7.2)
       sass-listen (~> 4.0.0)
     sass-listen (4.0.0)
@@ -199,9 +168,6 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
-    selenium-webdriver (3.141.0)
-      childprocess (~> 0.5)
-      rubyzip (~> 1.2, >= 1.2.2)
     spring (2.0.2)
       activesupport (>= 4.2)
     spring-watcher-listen (2.0.1)
@@ -233,20 +199,15 @@ GEM
     websocket-driver (0.7.0)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.3)
-    xpath (3.2.0)
-      nokogiri (~> 1.8)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  aws-sdk-s3
   bootsnap (>= 1.1.0)
   bootstrap
   bugsnag
   byebug
-  capybara
-  capybara-screenshot
   coffee-rails (~> 4.2)
   dotenv-rails
   enumerize
@@ -261,7 +222,6 @@ DEPENDENCIES
   retryable
   sassc
   sassc-rails
-  selenium-webdriver
   spring
   spring-watcher-listen (~> 2.0.0)
   turbolinks (~> 5)

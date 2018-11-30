@@ -41,10 +41,6 @@ gem 'font-awesome-sass'
 gem 'enumerize'
 
 gem 'dotenv-rails'
-gem 'capybara'
-gem 'selenium-webdriver'
-gem 'aws-sdk-s3'
-gem 'capybara-screenshot'
 gem 'retryable'
 gem 'bugsnag'
 

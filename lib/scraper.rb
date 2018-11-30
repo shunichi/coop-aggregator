@@ -2,9 +2,6 @@
 
 #!/usr/bin/env ruby
 
-require 'capybara'
-require 'date'
-require 'fileutils'
 require 'dotenv'
 Dotenv.load
 
@@ -15,38 +12,7 @@ DELI_USER_ID = ENV['DELI_USER_ID']
 DELI_PASSWORD = ENV['DELI_PASSWORD']
 DELI_API_URL = ENV['DELI_API_URL']
 
-def write_html(session, filename)
-  FileUtils.mkdir_p('tmp')
-  IO.write(filename, session.html)
-end
-
-Capybara::Screenshot.autosave_on_failure = false
-Capybara::Screenshot.s3_configuration = {
-  s3_client_credentials: {
-    access_key_id: ENV.fetch('AWS_S3_ACCESS_KEY_ID'),
-    secret_access_key: ENV.fetch('AWS_S3_SECRET_KEY'),
-    region: ENV.fetch('AWS_S3_REGION'),
-  },
-  bucket_name: ENV.fetch('AWS_S3_BUCKET_NAME')
-}
-Capybara::Screenshot.s3_object_configuration = {
-  acl: 'public-read'
-}
-
-# # puts '************************************* COOP DELI'
-# coop_deli
-# puts '************************************* PAL SYSTEM'
-# pal_system
-
 class Scraper
-  attr_reader :delivery_days, :scraped_items
-
-  def initialize(driver = :selenium_chrome_headless)
-    @driver = driver
-    Capybara.current_driver = driver
-    Capybara.save_path = 'tmp/capybara'
-  end
-
   class APIError < StandardError
   end
 
