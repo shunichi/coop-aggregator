@@ -11,4 +11,4 @@
     = item.name
   .delivery-item__quantity
     = item.quantity
-= render partial: 'home/item', collection: item.child_items.order(:id), locals: { shop: shop }
+= render partial: 'home/item', collection: item.child_items.order(:id).zero_item_back, locals: { shop: shop }

@@ -13,4 +13,10 @@ class Item < ApplicationRecord
   enumerize :category, in: CATEGORIES
   validates :name, :category, presence: true
   validates :price, :quantity, :total, numericality:  { greater_than_or_equal_to: 0 }
+
+  class << self
+    def zero_item_back
+      all.to_a.partition { |item| item.quantity > 0 }.flatten
+    end
+  end
 end
