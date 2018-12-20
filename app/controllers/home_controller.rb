@@ -6,4 +6,7 @@ class HomeController < ApplicationController
     @deliveries = Delivery.after(Date.current).default_order.preload(:shop, root_items: :child_items)
     @deliveries_without_delivery_date = Delivery.without_delivery_date.order(:id).preload(:shop, root_items: :child_items)
   end
+
+  def pwa
+  end
 end

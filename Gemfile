@@ -37,10 +37,13 @@ gem 'bootstrap'
 gem 'font-awesome-sass'
 
 gem 'enumerize'
+gem 'jb'
 
 gem 'dotenv-rails'
 gem 'retryable'
 gem 'bugsnag'
+gem 'webpacker'
+gem 'webpacker-react'
 
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', require: false

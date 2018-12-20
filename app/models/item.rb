@@ -14,6 +14,14 @@ class Item < ApplicationRecord
   validates :name, :category, presence: true
   validates :price, :quantity, :total, numericality:  { greater_than_or_equal_to: 0 }
 
+  def to_json
+    hash = attributes.slice(*%w[name price quantity total image_url category])
+    if items = child_items.map(&:to_json).presence
+      hash.merge!(child_items: items)
+    end
+    hash
+  end
+
   class << self
     def zero_item_back
       all.to_a.partition { |item| item.quantity > 0 }.flatten

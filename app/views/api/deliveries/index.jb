@@ -1,0 +1,10 @@
+@deliveries.map do |delivery|
+  {
+    id: delivery.id,
+    shop: delivery.shop.name,
+    shop_display_name: delivery.shop.display_name,
+    name: delivery.name,
+    delivery_date: delivery.delivery_date,
+    items: delivery.root_items.map(&:to_json)
+  }
+end
