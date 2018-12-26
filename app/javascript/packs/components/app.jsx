@@ -2,12 +2,16 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import Delivery from './delivery';
+import partition from 'lodash/partition';
+import { parse, startOfToday } from 'date-fns';
+import format from '../lib/date-format';
 
 class App extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      currentDate: startOfToday(),
       data: null,
     };
   }
@@ -19,11 +23,21 @@ class App extends Component {
   }
 
   render() {
-    const { data }  = this.state;
+    const { data, currentDate }  = this.state;
     if (data) {
+      const _data = data.map((delivery) => ({ ...delivery, delivery_date: parse(delivery.delivery_date) }))
+      const partitioned = partition(_data, (delivery) => delivery.delivery_date < currentDate );
       return (
-        <ul>
-          {data.map(delivery => <Delivery key={delivery.id} delivery={delivery}/>)}
+        <ul className="list-unstyled delivery-list">
+          {partitioned[0].map(delivery => <Delivery key={delivery.id} data={delivery}/>)}
+          <li className='delivery-list__separator'>
+            <div className='delivery-list__separator-line' />
+            <div className='delivery-list__separator-date'>
+            今日：{format(currentDate, 'YYYY年M月D日(dd)')}
+            </div>
+            <div className='delivery-list__separator-line' />
+        </li>
+          {partitioned[1].map(delivery => <Delivery key={delivery.id} data={delivery}/>)}
         </ul>
       );
     } else {

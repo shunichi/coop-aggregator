@@ -15,9 +15,12 @@ class Item < ApplicationRecord
   validates :price, :quantity, :total, numericality:  { greater_than_or_equal_to: 0 }
 
   def to_json
-    hash = attributes.slice(*%w[name price quantity total image_url category])
+    hash = attributes.slice(*%w[id name price quantity total image_url category])
     if items = child_items.map(&:to_json).presence
-      hash.merge!(child_items: items)
+      hash.merge!(childItems: items)
+    end
+    if parent_id
+      hash.merge!(isChild: true)
     end
     hash
   end
