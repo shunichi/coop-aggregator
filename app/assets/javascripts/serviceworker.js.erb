@@ -1,5 +1,6 @@
 const STATIC_CACHE_NAME = 'coop-aggregator-sw-cache-static-v1';
 const DYNAMIC_CACHE_NAME = 'coop-aggregator-sw-cache-dynamic-v1';
+const IMAGE_CACHE_NAME = 'coop-aggregator-sw-cache-image-v1';
 const CACHE_NAMES = [STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME];
 const HOST_NAME = '<%= ENV["SERVER_HOST_NAME"] %>';
 const STATIC_ASSETS = [
@@ -50,6 +51,10 @@ function onFetch(event) {
       // console.log('static: ' + requestURL.pathname);
       return event.respondWith(cacheOrFetch(STATIC_CACHE_NAME, event.request));
     }
+  }
+  const imagePathRegexp = new RegExp('^/palimage/ItemImage')
+  if (requestURL.hostname == 'shop.pal-system.co.jp' && imagePathRegexp.test(requestURL.pathname)) {
+    return event.respondWith(cacheOrFetch(IMAGE_CACHE_NAME, event.request));
   }
   return event.respondWith(networkFirst(event.request));
 }
