@@ -2,7 +2,7 @@ const STATIC_CACHE_NAME = 'coop-aggregator-sw-cache-static-v1';
 const DYNAMIC_CACHE_NAME = 'coop-aggregator-sw-cache-dynamic-v1';
 const IMAGE_CACHE_NAME = 'coop-aggregator-sw-cache-image-v1';
 const CACHE_NAMES = [STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME];
-const HOST_NAME = '<%= ENV["SERVER_HOST_NAME"] %>';
+const HOST_NAME = self.location.hostname;
 const STATIC_ASSETS = [
   '<%= asset_path "application.js" %>',
   '<%= asset_path "application.css" %>',
