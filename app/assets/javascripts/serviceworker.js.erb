@@ -74,7 +74,7 @@ function cacheFirst(cacheName, request) {
       const fetchPromise = fetch(request).then(function(networkResponse) {
         cache.put(request, networkResponse.clone());
         return networkResponse;
-      });
+      }).catch(function() { return new Response(); });
       return response || fetchPromise;
     });
   });
