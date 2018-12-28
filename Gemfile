@@ -44,6 +44,7 @@ gem 'retryable'
 gem 'bugsnag'
 gem 'webpacker'
 gem 'webpacker-react'
+gem 'serviceworker-rails'
 
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', require: false

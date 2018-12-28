@@ -1,0 +1,19 @@
+<% icon_sizes = [57, 60, 72, 76, 114, 120, 144, 152, 180] %>
+{
+  "name": "coop-san",
+  "short_name": "coop-san",
+  "start_url": "./?homescreen=1",
+  "icons": [
+  <% icon_sizes.map { |s| "#{s}x#{s}" }.each.with_index do |dim, i| %>
+    {
+      "src": "<%= "/apple-touch-icon-#{dim}.png" %>",
+      "sizes": "<%= dim %>",
+      "type": "image/png"
+    }<%= i == (icon_sizes.length - 1) ? '' : ',' %>
+  <% end %>
+  ],
+  "theme_color": "#000000",
+  "background_color": "#FFFFFF",
+  "display": "fullscreen",
+  "orientation": "portrait"
+}
