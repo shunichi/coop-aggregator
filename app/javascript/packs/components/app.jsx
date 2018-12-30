@@ -5,6 +5,7 @@ import Delivery from './delivery';
 import partition from 'lodash/partition';
 import { parse, startOfToday } from 'date-fns';
 import format from '../lib/date-format';
+import addMessageHandler from '../lib/service-worker-message';
 
 class App extends Component {
   constructor(props) {
@@ -14,6 +15,18 @@ class App extends Component {
       currentDate: startOfToday(),
       data: null,
     };
+
+    // TODO: 更新ボタンを作る
+    addMessageHandler(({url, cacheName}) => {
+      console.log(`updated: ${url} : ${cacheName}`);
+      const regexp = new RegExp('/api/deliveries$')
+      if (regexp.test(url)) {
+        caches.open(cacheName).then((cache) => {
+          return cache.match(url);
+        }).then(response => response.json())
+        .then(data => this.setState({ data }));
+      }
+    });
   }
 
   componentDidMount() {
@@ -55,4 +68,3 @@ document.addEventListener('DOMContentLoaded', () => {
     )
   }
 })
-
