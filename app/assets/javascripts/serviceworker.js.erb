@@ -57,7 +57,9 @@ const postMessagePlugin = {
   },
 };
 
-workbox.precaching.precacheAndRoute(STATIC_ASSETS);
+workbox.precaching.precacheAndRoute(STATIC_ASSETS, {
+  ignoreUrlParametersMatching: [/^body$/, /^homescreen$/]
+});
 workbox.routing.registerRoute(
   '/api/deliveries',
   workbox.strategies.staleWhileRevalidate({
