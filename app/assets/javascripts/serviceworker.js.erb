@@ -1,4 +1,4 @@
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/3.6.1/workbox-sw.js');
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js');
 
 const STATIC_ASSETS = [
   '<%= asset_path "application.js" %>',
@@ -8,8 +8,8 @@ const STATIC_ASSETS = [
   '/pwa',
   '/favicon.ico',
 ];
-const CACHE_VERSION = 'v6';
-const IMAGE_CACHE_PREFIX = 'coop-aggregator-image-cache-';
+const CACHE_VERSION = 'v7';
+const IMAGE_CACHE_PREFIX = 'coop-aggregator-image-';
 const IMAGE_CACHE_NAME = IMAGE_CACHE_PREFIX + CACHE_VERSION;
 
 workbox.core.setCacheNameDetails({
@@ -17,6 +17,8 @@ workbox.core.setCacheNameDetails({
   suffix: CACHE_VERSION
 });
 
+// workbox には古いバージョンの cache や indexedDB を消す機能はないようなので、
+// 自分で削除する
 // https://github.com/GoogleChrome/workbox/issues/1407
 let currentCacheNames = Object.assign(
   { precacheTemp: workbox.core.cacheNames.precache + "-temp" },
@@ -24,7 +26,15 @@ let currentCacheNames = Object.assign(
 );
 currentCacheNames.imageCache = IMAGE_CACHE_NAME;
 
-// TODO: IndexedDBも消したい
+function deleteIndexedDB(dbname) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.deleteDatabase(dbname);
+    request.onerror = (evt) => reject(evt.target.error);
+    request.onblocked = () => reject(new Error('Deletion was blocked.'));
+    request.onsuccess = () => resolve();
+  });
+}
+
 self.addEventListener("activate", function(event) {
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
@@ -36,6 +46,11 @@ self.addEventListener("activate", function(event) {
           })
           .map(function(cacheName) {
             console.log("deleting cache", cacheName);
+            // 存在しない indexedDB を削除しても成功する仕様のようだ
+            // https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory/deleteDatabase
+            deleteIndexedDB(cacheName)
+              .then(() => console.log("indexedDB deleted: " + cacheName) )
+              .catch((error) => console.log(error));
             return caches.delete(cacheName);
           })
       );
@@ -43,6 +58,7 @@ self.addEventListener("activate", function(event) {
   );
 });
 
+// https://developers.google.com/web/tools/workbox/guides/advanced-recipes#use_postmessage_to_notify_of_cache_updates
 const postMessagePlugin = {
   cacheDidUpdate: async ({cacheName, request, oldResponse, newResponse}) => {
     // Use whatever logic you want to determine whether the responses differ.
@@ -74,6 +90,7 @@ workbox.routing.registerRoute(
       new workbox.expiration.Plugin({
         maxEntries: 50,
         maxAgeSeconds: 14 * 24 * 60 * 60, // 14 Days
+        purgeOnQuotaError: true,
       })
     ]
   })
