@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Delivery from './delivery';
+import DeliveryListFooter from './delivery_list_footer';
 import partition from 'lodash/partition';
 import { parse, startOfToday } from 'date-fns';
 import format from '../lib/date-format';
@@ -24,6 +25,7 @@ class DeliveryList extends Component {
     this.state = {
       currentDate: startOfToday(),
       data: null,
+      filter: null,
     };
 
     // TODO: 更新ボタンを作る
@@ -45,17 +47,22 @@ class DeliveryList extends Component {
       .then(data => this.setState({ data }));
   }
 
+  onFilterChanged = (category) => { this.setState({ filter: category }); };
+
   render() {
-    const { data, currentDate }  = this.state;
+    const { data, currentDate, filter }  = this.state;
     if (data) {
       const _data = data.map((delivery) => ({ ...delivery, delivery_date: parse(delivery.delivery_date) }))
       const partitioned = partition(_data, (delivery) => delivery.delivery_date < currentDate );
       return (
-        <ul className="list-unstyled delivery-list">
-          {partitioned[0].map(delivery => <Delivery key={delivery.id} data={delivery}/>)}
-          <Separator currentDate={currentDate} />
-          {partitioned[1].map(delivery => <Delivery key={delivery.id} data={delivery}/>)}
-        </ul>
+        <React.Fragment>
+          <ul className="list-unstyled delivery-list">
+            {partitioned[0].map(delivery => <Delivery key={delivery.id} data={delivery} category={filter} />)}
+            <Separator currentDate={currentDate} />
+            {partitioned[1].map(delivery => <Delivery key={delivery.id} data={delivery} category={filter} />)}
+          </ul>
+          <DeliveryListFooter onFilterChanged={this.onFilterChanged}/>
+        </React.Fragment>
       );
     } else {
       return <div> NO Data </div>;

@@ -11,7 +11,8 @@ const itemCategory = (category) => {
   else {
     return '';
   }
-}
+};
+
 const Item = (props) => {
   const { data, shopName } = props;
   const classes = ['delivery-item'];
@@ -19,13 +20,17 @@ const Item = (props) => {
     classes.push('is-zero');
   if (data.isChild)
     classes.push('is-child');
+  const childItems = data.childItems || [];
   return (
-    <li className={classes.join(' ')}>
-      <div className={'delivery-item__mark ' + shopName}></div>
-      {data.image_url ? <div className='delivery-item__image'><img src={data.image_url} /></div> : ''}
-      <div className='delivery-item__name'>{itemCategory(data.category)} {data.name}</div>
-      <div className='delivery-item__quantity'>{data.quantity}</div>
-    </li>
+    <React.Fragment>
+      <li className={classes.join(' ')}>
+        <div className={'delivery-item__mark ' + shopName}></div>
+        {data.image_url ? <div className='delivery-item__image'><img src={data.image_url} /></div> : ''}
+        <div className='delivery-item__name'>{itemCategory(data.category)} {data.name}</div>
+        <div className='delivery-item__quantity'>{data.quantity}</div>
+      </li>
+      {childItems.map((item => <Item key={item.id} data={item} shopName={shopName} />))}
+    </React.Fragment>
   );
 };
 
