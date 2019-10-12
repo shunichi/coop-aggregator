@@ -2,9 +2,9 @@
   "name": "coop-aggregator",
   "private": true,
   "dependencies": {
-    "@rails/webpacker": "3.5",
+    "@rails/webpacker": "4.0.7",
     "babel-preset-react": "^6.24.1",
-    "date-fns": "^1.30.1",
+    "date-fns": "^2.4.1",
     "lodash": "^4.17.11",
     "prop-types": "^15.6.2",
     "react": "^16.6.3",
@@ -12,6 +12,6 @@
     "webpacker-react": "^0.3.2"
   },
   "devDependencies": {
-    "webpack-dev-server": "2.11.2"
+    "webpack-dev-server": "3.8.2"
   }
 }
