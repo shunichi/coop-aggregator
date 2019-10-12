@@ -1,5 +1,9 @@
 const puppeteer = require('puppeteer');
 
+function debugLog(arg) {
+  // console.log(arg);
+}
+
 async function waitUntilLoad(page, asyncFunc) {
   let loadPromise = page.waitForNavigation({waitUntil: "domcontentloaded"});
   await asyncFunc(page);
@@ -41,15 +45,15 @@ async function scrapeDeliveryDates(page) {
 
 function scanDeliveries() {
   const titles = [...document.querySelectorAll('.list-input.orderRest .col.title')].map((node) => node.textContent);
-  const regex = /(\d+月.+?)　(\d+)月(\d+)日/;
+  const regex = /(\d+)\/(\d+).* (\d+月.+)/
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
   return titles.map((title) => {
     const m = regex.exec(title);
-    const month = parseInt(m[2]);
+    const month = parseInt(m[1]);
     const year = month < currentMonth ? currentYear + 1 : currentYear;
-    return {name: m[1], deliveryDate: `${year}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`};
+    return {name: m[3], deliveryDate: `${year}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`};
   });
 }
 
@@ -70,6 +74,11 @@ function addYearToName(name) {
 function squeeze(str) {
   return str.replace(/[\n\s]+/g, ' ').trim();
 }
+
+function removeSpaces(str) {
+  return str.replace(/[\n\s]+/g, '');
+}
+
 
 function parseIntWithComma(str) {
   return parseInt(str.replace(/,/g, ''))
@@ -98,10 +107,10 @@ async function scrapeNextOrder(page) {
   const month = await page.$eval('.shop-info .month .num', node => node.textContent);
   const times = await page.$eval('.shop-info .times .num', node => node.textContent);
   const name = addYearToName(`${month.trim()}月${times.trim()}回`);
-  await page.waitForSelector('.order-table1 tr.detail');
-  const rows = await page.$$('.order-table1 tr.detail');
+  await page.waitForSelector('.order-unit.detail');
+  const rows = await page.$$('.order-unit.detail');
   const flatItems = await Promise.all(rows.map(async(row) => {
-    const isChild = await page.evaluate((node) => node.classList.contains('set-child'), row);
+    const isChild = await page.evaluate((node) => node.classList.contains('-style-childunit'), row);
     let name = null;
     // 値引きの行だと .name がないので無視する
     try {
@@ -109,12 +118,12 @@ async function scrapeNextOrder(page) {
     } catch (e) {
       return null;
     }
-    const cold = await exists(page, row, ".//img[@alt='お届け状態 冷蔵']");
-    const frozen = await exists(page, row, ".//img[@alt='お届け状態 冷凍']");
-    const quantity = parseInt(await row.$eval('.quantity input.orderQty', node => node.value));
-    const price = parseInt((await row.$eval('.price-small', node => node.textContent)).replace(/[^\d]/g, ''));
-    const total = parseInt((await row.$eval('.total', node => node.textContent)).replace(/[^\d]/g, ''));
-    const imageUrl = await row.$eval('.photo img', node => node.src);
+    const cold = await row.$('.mark.mark-cold') !== null;
+    const frozen = await row.$('.mark.mark-frozen') !== null;
+    const quantity = parseInt(await row.$eval('input.orderQty', node => node.value));
+    const price = parseInt((await row.$eval('.price .num', node => node.textContent)).replace(/[^\d]/g, ''));
+    const total = price * quantity;
+    const imageUrl = await row.$eval('.item-thumb img', node => node.src);
     return { isChild, name, price, quantity, total, imageUrl, cold, frozen };
   }));
   const items = makeChildren(flatItems);
@@ -123,8 +132,8 @@ async function scrapeNextOrder(page) {
 
 async function scrapeLatestOrder(page) {
   await goto(page, 'https://shop.pal-system.co.jp/pal/OrderReferenceDirect.do');
-  const title = await page.$eval('.section.record > h2', (node) => node.textContent );
-  const m = /(\d+月\d回)/.exec(title);
+  const title = await page.$eval('.section.record .header .dropdown-button .label', (node) => node.textContent );
+  const m = /(\d+月\d回)/.exec(removeSpaces(title));
   const name = addYearToName(m[1]);
   const rows = await page.$x("//table[contains(@class,'order-table1')]/tbody/tr[td[contains(@class,'item')]]");
   const flatItems = await Promise.all(rows.map(async (row) => {
@@ -136,8 +145,10 @@ async function scrapeLatestOrder(page) {
       )).replace('【定期お届け】', '')
     );
     const quantity = parseIntWithComma(await row.$eval('.quantity', item => item.textContent));
-    const price = parseIntWithComma(await row.$eval('.price', item => item.textContent));
+    // const price = parseIntWithComma(await row.$eval('.price', item => item.textContent));
     const total = parseIntWithComma(await row.$eval('.total', item => item.textContent));
+    // 単価が表になくなっていたので total から計算（特に使ってないのでなくてもいいのだけど一応）
+    const price = quantity === 0 ? 0 : Math.floor(total / quantity);
     return { isChild, name, price, quantity, total };
   }));
   const items = makeChildren(flatItems);
@@ -145,10 +156,15 @@ async function scrapeLatestOrder(page) {
 }
 
 async function scrapeAll(page, credential) {
+  debugLog('login');
   await login(page, credential);
+  debugLog('scrapeDeliveryDates');
   const deliveryDates = await scrapeDeliveryDates(page);
+  debugLog('scrapeNextOrder');
   const nextOrder = await scrapeNextOrder(page);
+  debugLog('scrapeLatestOrder');
   const order = await scrapeLatestOrder(page);
+  debugLog('scrapeLatestOrder end');
   const orders = [order, nextOrder];
   return { deliveryDates, orders };
 }
