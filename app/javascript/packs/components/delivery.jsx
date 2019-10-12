@@ -19,7 +19,7 @@ const categoryFilter = (items, category) => {
 const Delivery = (props) => {
   const { data, category } = props;
   const date = data.delivery_date;
-  const dateStr = format(date, 'YYYY年M月D日(dd)');
+  const dateStr = format(date, 'yyyy年M月d日(E)');
   const items = categoryFilter(data.items, category);
   return (
     <li className={'delivery-header ' + data.shop}>

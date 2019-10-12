@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Delivery from './delivery';
 import DeliveryListFooter from './delivery_list_footer';
 import partition from 'lodash/partition';
-import { parse, startOfToday } from 'date-fns';
+import { parseISO, startOfToday } from 'date-fns';
 import format from '../lib/date-format';
 import addMessageHandler from '../lib/service-worker-message';
 
@@ -11,7 +11,7 @@ const Separator = ({currentDate}) => {
     <li className='delivery-list__separator'>
       <div className='delivery-list__separator-line' />
       <div className='delivery-list__separator-date'>
-      今日：{format(currentDate, 'YYYY年M月D日(dd)')}
+      今日：{format(currentDate, 'yyyy年M月d日(E)')}
       </div>
       <div className='delivery-list__separator-line' />
     </li>
@@ -52,7 +52,7 @@ class DeliveryList extends Component {
   render() {
     const { data, currentDate, filter }  = this.state;
     if (data) {
-      const _data = data.map((delivery) => ({ ...delivery, delivery_date: parse(delivery.delivery_date) }))
+      const _data = data.map((delivery) => ({ ...delivery, delivery_date: parseISO(delivery.delivery_date) }))
       const partitioned = partition(_data, (delivery) => delivery.delivery_date < currentDate );
       return (
         <React.Fragment>

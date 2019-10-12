@@ -2,16 +2,18 @@
   "name": "coop-aggregator",
   "private": true,
   "dependencies": {
-    "@rails/webpacker": "4.0.7",
+    "@babel/preset-react": "^7.6.3",
+    "@rails/webpacker": "^4.0.7",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "babel-preset-react": "^6.24.1",
     "date-fns": "^2.4.1",
     "lodash": "^4.17.11",
-    "prop-types": "^15.6.2",
-    "react": "^16.6.3",
-    "react-dom": "^16.6.3",
+    "prop-types": "^15.7.2",
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2",
     "webpacker-react": "^0.3.2"
   },
   "devDependencies": {
-    "webpack-dev-server": "3.8.2"
+    "webpack-dev-server": "^3.8.2"
   }
 }
